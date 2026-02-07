@@ -8,7 +8,8 @@ import {
   LogOut, 
   Menu,
   X,
-  ChevronLeft
+  ChevronLeft,
+  MapPin
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -22,6 +23,7 @@ interface AdminLayoutProps {
 const navItems = [
   { name: 'Dashboard', path: '/admin', icon: LayoutDashboard },
   { name: 'Properties', path: '/admin/properties', icon: Home },
+  { name: 'Area Guide', path: '/admin/area-guides', icon: MapPin },
   { name: 'Contacts', path: '/admin/contacts', icon: MessageSquare },
   { name: 'Owner Inquiries', path: '/admin/owners', icon: Users },
 ];

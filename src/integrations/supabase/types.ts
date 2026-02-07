@@ -14,6 +14,78 @@ export type Database = {
   }
   public: {
     Tables: {
+      area_guide_activities: {
+        Row: {
+          category: string
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          items: string[] | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          items?: string[] | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          items?: string[] | null
+        }
+        Relationships: []
+      }
+      area_guides: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          distance: string | null
+          drive_time: string | null
+          highlights: string[] | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          distance?: string | null
+          drive_time?: string | null
+          highlights?: string[] | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          distance?: string | null
+          drive_time?: string | null
+          highlights?: string[] | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contact_submissions: {
         Row: {
           created_at: string
