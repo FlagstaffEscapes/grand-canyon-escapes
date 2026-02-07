@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, DollarSign, Users, TrendingUp, Shield, Phone, Mail } from 'lucide-react';
+import { Check, DollarSign, Users, TrendingUp, Shield, Phone, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout/Layout';
 import { useToast } from '@/hooks/use-toast';
+import { useSubmitOwnerInquiry } from '@/hooks/useContacts';
+import { supabase } from '@/integrations/supabase/client';
 import propertyExterior from '@/assets/property-exterior-1.jpg';
 
 const fadeInUp = {
@@ -23,21 +27,73 @@ const staggerContainer = {
 
 const Owners = () => {
   const { toast } = useToast();
+  const submitInquiry = useSubmitOwnerInquiry();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     propertyAddress: '',
+    propertyType: '',
+    bedrooms: '',
+    currentlyRenting: false,
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Thank you for your interest!",
-      description: "We'll be in touch within 24 hours to discuss your property.",
-    });
-    setFormData({ name: '', email: '', phone: '', propertyAddress: '', message: '' });
+    setIsSubmitting(true);
+
+    try {
+      // Save to database
+      await submitInquiry.mutateAsync({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        property_address: formData.propertyAddress || null,
+        property_type: formData.propertyType || null,
+        bedrooms: formData.bedrooms ? parseInt(formData.bedrooms) : null,
+        currently_renting: formData.currentlyRenting,
+        message: formData.message || null,
+      });
+
+      // Send email notification
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'owner',
+            data: formData,
+          },
+        });
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError);
+        // Don't fail the submission if email fails
+      }
+
+      toast({
+        title: "Thank you for your interest!",
+        description: "We'll be in touch within 24 hours to discuss your property.",
+      });
+      
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        propertyAddress: '',
+        propertyType: '',
+        bedrooms: '',
+        currentlyRenting: false,
+        message: '',
+      });
+    } catch (error) {
+      toast({
+        title: "Submission failed",
+        description: "Please try again or contact us directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const benefits = [
@@ -144,7 +200,7 @@ const Owners = () => {
             variants={staggerContainer}
             className="grid grid-cols-1 md:grid-cols-2 gap-8"
           >
-            {benefits.map((benefit, index) => (
+            {benefits.map((benefit) => (
               <motion.div
                 key={benefit.title}
                 variants={fadeInUp}
@@ -277,18 +333,57 @@ const Owners = () => {
                     className="bg-background"
                   />
                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Property Type</label>
+                    <Input
+                      type="text"
+                      value={formData.propertyType}
+                      onChange={(e) => setFormData({ ...formData, propertyType: e.target.value })}
+                      placeholder="Cabin, House, Condo..."
+                      className="bg-background"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Bedrooms</label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={formData.bedrooms}
+                      onChange={(e) => setFormData({ ...formData, bedrooms: e.target.value })}
+                      className="bg-background"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="currentlyRenting"
+                    checked={formData.currentlyRenting}
+                    onCheckedChange={(checked) => setFormData({ ...formData, currentlyRenting: !!checked })}
+                  />
+                  <Label htmlFor="currentlyRenting" className="text-sm cursor-pointer">
+                    Currently renting this property
+                  </Label>
+                </div>
                 <div>
                   <label className="text-sm font-medium mb-2 block">Tell Us About Your Property</label>
                   <Textarea
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     rows={4}
-                    placeholder="Number of bedrooms, current rental status, etc."
+                    placeholder="Current rental status, unique features, goals for the property..."
                     className="bg-background"
                   />
                 </div>
-                <Button type="submit" variant="accent" size="lg" className="w-full">
-                  Submit Inquiry
+                <Button type="submit" variant="accent" size="lg" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Submitting...
+                    </>
+                  ) : (
+                    'Submit Inquiry'
+                  )}
                 </Button>
               </form>
 

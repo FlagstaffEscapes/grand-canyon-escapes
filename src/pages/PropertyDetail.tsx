@@ -3,14 +3,12 @@ import { motion } from 'framer-motion';
 import { 
   Bed, Bath, Users, MapPin, Check, ChevronLeft, 
   Wifi, Flame, Mountain, Utensils, Tv, Car, Sparkles,
-  Wine, Dumbbell, Waves
+  Wine, Dumbbell, Waves, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
-import { getPropertyById } from '@/data/properties';
-import propertyExterior from '@/assets/property-exterior-1.jpg';
-import propertyInterior from '@/assets/property-interior-1.jpg';
-import propertyBedroom from '@/assets/property-bedroom.jpg';
+import { usePropertyBySlug } from '@/hooks/useProperties';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -23,6 +21,7 @@ const amenityIcons: Record<string, React.ElementType> = {
   'Mountain View': Mountain,
   'Canyon View': Mountain,
   'Forest View': Mountain,
+  'Kitchen': Utensils,
   'Fully Equipped Kitchen': Utensils,
   'Gourmet Kitchen': Utensils,
   'Commercial Kitchen': Utensils,
@@ -33,18 +32,59 @@ const amenityIcons: Record<string, React.ElementType> = {
   'Wine Room': Wine,
   'Home Gym': Dumbbell,
   'Sauna': Sparkles,
+  'Pool': Waves,
+  'Home Theater': Tv,
+  'Game Room': Tv,
 };
 
 const PropertyDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const property = getPropertyById(id || '');
+  const { slug } = useParams<{ slug: string }>();
+  const { data: property, isLoading, error } = usePropertyBySlug(slug || '');
 
-  if (!property) {
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="bg-card border-b border-border pt-24 pb-4">
+          <div className="container mx-auto px-4 lg:px-8">
+            <Skeleton className="h-5 w-32" />
+          </div>
+        </div>
+        <section className="bg-card pb-8">
+          <div className="container mx-auto px-4 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Skeleton className="aspect-[4/3] rounded-lg" />
+              <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="aspect-[4/3] rounded-lg" />
+                <Skeleton className="aspect-[4/3] rounded-lg" />
+              </div>
+            </div>
+          </div>
+        </section>
+        <section className="py-12 bg-background">
+          <div className="container mx-auto px-4 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              <div className="lg:col-span-2 space-y-6">
+                <Skeleton className="h-10 w-3/4" />
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+              <Skeleton className="h-96 rounded-xl" />
+            </div>
+          </div>
+        </section>
+      </Layout>
+    );
+  }
+
+  if (error || !property) {
     return (
       <Layout>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <h1 className="font-serif text-4xl mb-4">Property Not Found</h1>
+            <p className="text-muted-foreground mb-6">
+              This property may no longer be available.
+            </p>
             <Button asChild>
               <Link to="/properties">Browse Properties</Link>
             </Button>
@@ -54,7 +94,21 @@ const PropertyDetail = () => {
     );
   }
 
-  const galleryImages = [propertyExterior, propertyInterior, propertyBedroom];
+  const sortedImages = [...(property.property_images || [])].sort(
+    (a, b) => (a.is_primary ? -1 : 1) - (b.is_primary ? -1 : 1)
+  );
+  
+  const galleryImages = sortedImages.length > 0 
+    ? sortedImages.map(img => img.image_url)
+    : ['/placeholder.svg'];
+
+  const houseRules = property.house_rules?.split('\n').filter(Boolean) || [
+    `Check-in: ${property.check_in_time || '4:00 PM'}`,
+    `Checkout: ${property.check_out_time || '11:00 AM'}`,
+    'No smoking',
+    'Pets considered on request',
+    'No parties or events',
+  ];
 
   return (
     <Layout>
@@ -87,7 +141,7 @@ const PropertyDetail = () => {
               />
             </motion.div>
             <div className="grid grid-cols-2 gap-4">
-              {galleryImages.slice(1).map((img, index) => (
+              {galleryImages.slice(1, 3).map((img, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -102,6 +156,16 @@ const PropertyDetail = () => {
                   />
                 </motion.div>
               ))}
+              {galleryImages.length <= 1 && (
+                <>
+                  <div className="aspect-[4/3] rounded-lg bg-muted flex items-center justify-center">
+                    <span className="text-muted-foreground">No additional images</span>
+                  </div>
+                  <div className="aspect-[4/3] rounded-lg bg-muted flex items-center justify-center">
+                    <span className="text-muted-foreground">No additional images</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -116,7 +180,7 @@ const PropertyDetail = () => {
               <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
                 <div className="flex items-center gap-2 text-muted-foreground mb-2">
                   <MapPin className="w-4 h-4" />
-                  <span>{property.location}</span>
+                  <span>{property.city}, {property.state}</span>
                 </div>
                 <h1 className="font-serif text-4xl md:text-5xl font-semibold mb-2">{property.name}</h1>
                 <p className="text-xl text-accent italic">{property.tagline}</p>
@@ -153,7 +217,7 @@ const PropertyDetail = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Guests</p>
-                    <p className="font-semibold">{property.guests}</p>
+                    <p className="font-semibold">{property.sleeps}</p>
                   </div>
                 </div>
               </motion.div>
@@ -161,49 +225,39 @@ const PropertyDetail = () => {
               {/* Description */}
               <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
                 <h2 className="font-serif text-2xl font-semibold mb-4">About This Property</h2>
-                <p className="text-muted-foreground leading-relaxed text-lg">{property.description}</p>
+                <p className="text-muted-foreground leading-relaxed text-lg whitespace-pre-line">
+                  {property.description}
+                </p>
               </motion.div>
 
               {/* Amenities */}
-              <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
-                <h2 className="font-serif text-2xl font-semibold mb-6">Amenities</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {property.amenities.map((amenity) => {
-                    const Icon = amenityIcons[amenity] || Check;
-                    return (
-                      <div key={amenity} className="flex items-center gap-3 p-3 rounded-lg bg-card">
-                        <Icon className="w-5 h-5 text-primary flex-shrink-0" />
-                        <span className="text-sm">{amenity}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </motion.div>
+              {property.amenities && property.amenities.length > 0 && (
+                <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
+                  <h2 className="font-serif text-2xl font-semibold mb-6">Amenities</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {property.amenities.map((amenity) => {
+                      const Icon = amenityIcons[amenity] || Check;
+                      return (
+                        <div key={amenity} className="flex items-center gap-3 p-3 rounded-lg bg-card">
+                          <Icon className="w-5 h-5 text-primary flex-shrink-0" />
+                          <span className="text-sm">{amenity}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
 
               {/* House Rules */}
               <motion.div initial="hidden" animate="visible" variants={fadeInUp}>
                 <h2 className="font-serif text-2xl font-semibold mb-4">House Rules</h2>
                 <ul className="space-y-2 text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-primary" />
-                    Check-in: 4:00 PM - 10:00 PM
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-primary" />
-                    Checkout: 11:00 AM
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-primary" />
-                    No smoking
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-primary" />
-                    Pets considered on request
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-primary" />
-                    No parties or events
-                  </li>
+                  {houseRules.map((rule, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-primary" />
+                      {rule}
+                    </li>
+                  ))}
                 </ul>
               </motion.div>
             </div>
@@ -219,7 +273,7 @@ const PropertyDetail = () => {
                 <div className="text-center mb-6">
                   <p className="text-sm text-muted-foreground mb-1">Starting from</p>
                   <p className="font-serif text-4xl font-semibold text-primary">
-                    ${property.pricePerNight}
+                    ${Number(property.price_per_night).toFixed(0)}
                     <span className="text-lg text-muted-foreground font-normal">/night</span>
                   </p>
                 </div>
@@ -228,8 +282,8 @@ const PropertyDetail = () => {
                   <Button variant="accent" size="xl" className="w-full">
                     Check Availability
                   </Button>
-                  <Button variant="outline" size="lg" className="w-full">
-                    Contact Us
+                  <Button variant="outline" size="lg" className="w-full" asChild>
+                    <Link to="/about">Contact Us</Link>
                   </Button>
                 </div>
 

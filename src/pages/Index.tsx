@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Star, Shield, Clock, MapPin } from 'lucide-react';
+import { ArrowRight, Star, Shield, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
 import { PropertyCard } from '@/components/ui/PropertyCard';
-import { getFeaturedProperties } from '@/data/properties';
+import { useFeaturedProperties } from '@/hooks/useProperties';
+import { Skeleton } from '@/components/ui/skeleton';
 import heroImage from '@/assets/hero-home.jpg';
 import grandCanyonImage from '@/assets/grand-canyon.jpg';
 
@@ -24,7 +25,7 @@ const staggerContainer = {
 };
 
 const Index = () => {
-  const featuredProperties = getFeaturedProperties();
+  const { data: featuredProperties, isLoading } = useFeaturedProperties();
 
   return (
     <Layout>
@@ -132,7 +133,7 @@ const Index = () => {
                 title: 'Prime Location',
                 description: 'Just an hour from the Grand Canyon, with easy access to Sedona, hiking, and ski resorts.',
               },
-            ].map((item, index) => (
+            ].map((item) => (
               <motion.div
                 key={item.title}
                 variants={fadeInUp}
@@ -171,9 +172,23 @@ const Index = () => {
           </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredProperties.slice(0, 3).map((property, index) => (
-              <PropertyCard key={property.id} property={property} index={index} />
-            ))}
+            {isLoading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="space-y-4">
+                  <Skeleton className="aspect-[4/3] rounded-lg" />
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              ))
+            ) : featuredProperties && featuredProperties.length > 0 ? (
+              featuredProperties.slice(0, 3).map((property, index) => (
+                <PropertyCard key={property.id} property={property} index={index} />
+              ))
+            ) : (
+              <div className="col-span-3 text-center py-12">
+                <p className="text-muted-foreground">No featured properties available yet.</p>
+              </div>
+            )}
           </div>
 
           <motion.div
