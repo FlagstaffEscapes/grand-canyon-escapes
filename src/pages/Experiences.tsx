@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { MapPin, Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAreaGuides, useAreaGuideActivities } from '@/hooks/useAreaGuides';
 import grandCanyonImage from '@/assets/grand-canyon.jpg';
 import hikingImage from '@/assets/experiences-hiking.jpg';
 import heroImage from '@/assets/hero-home.jpg';
@@ -20,53 +22,17 @@ const staggerContainer = {
   },
 };
 
-const experiences = [
-  {
-    title: 'Grand Canyon National Park',
-    description: 'One of the world\'s most spectacular natural wonders, just an hour from Flagstaff. Watch the sunrise paint the canyon walls in shades of orange and red.',
-    distance: '80 miles',
-    time: '1.5 hours',
-    image: grandCanyonImage,
-    highlights: ['South Rim viewpoints', 'Bright Angel Trail', 'Desert View Watchtower', 'Mule rides', 'Helicopter tours'],
-  },
-  {
-    title: 'Sedona',
-    description: 'Famous for its stunning red rock formations, spiritual vortexes, and vibrant arts scene. A must-visit destination for hiking, photography, and relaxation.',
-    distance: '30 miles',
-    time: '45 minutes',
-    image: hikingImage,
-    highlights: ['Cathedral Rock', 'Bell Rock', 'Red Rock State Park', 'Tlaquepaque Arts Village', 'Spa resorts'],
-  },
-  {
-    title: 'Downtown Flagstaff',
-    description: 'Historic Route 66 charm meets mountain-town culture. Explore local breweries, boutique shops, and farm-to-table restaurants.',
-    distance: '0 miles',
-    time: 'You\'re here!',
-    image: heroImage,
-    highlights: ['Historic downtown', 'Local breweries', 'Route 66', 'Wheeler Park', 'Flagstaff Symphony'],
-  },
-];
-
-const activities = [
-  {
-    category: 'Winter Adventures',
-    items: ['Arizona Snowbowl skiing', 'Cross-country skiing', 'Snowshoeing', 'Ice skating'],
-  },
-  {
-    category: 'Outdoor Recreation',
-    items: ['Hiking trails', 'Mountain biking', 'Rock climbing', 'Fishing', 'Golf courses'],
-  },
-  {
-    category: 'Stargazing',
-    items: ['Lowell Observatory', 'Dark sky viewing', 'Astronomy tours', 'Meteor Crater'],
-  },
-  {
-    category: 'Cultural Experiences',
-    items: ['Museum of Northern Arizona', 'Wupatki National Monument', 'Walnut Canyon', 'Sunset Crater'],
-  },
-];
+// Fallback images mapping for seeded data without uploaded images
+const fallbackImages: Record<string, string> = {
+  'grand-canyon': grandCanyonImage,
+  'sedona': hikingImage,
+  'downtown-flagstaff': heroImage,
+};
 
 const Experiences = () => {
+  const { data: destinations, isLoading: destinationsLoading } = useAreaGuides();
+  const { data: activities, isLoading: activitiesLoading } = useAreaGuideActivities();
+
   return (
     <Layout>
       {/* Hero Section */}
@@ -128,63 +94,85 @@ const Experiences = () => {
             </motion.h2>
           </motion.div>
 
-          <div className="space-y-24">
-            {experiences.map((exp, index) => (
-              <motion.div
-                key={exp.title}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true }}
-                variants={staggerContainer}
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${
-                  index % 2 === 1 ? 'lg:flex-row-reverse' : ''
-                }`}
-              >
-                <motion.div
-                  variants={fadeInUp}
-                  className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}
-                >
-                  <div className="aspect-[4/3] rounded-xl overflow-hidden shadow-2xl">
-                    <img
-                      src={exp.image}
-                      alt={exp.title}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-                    />
+          {destinationsLoading ? (
+            <div className="space-y-24">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                  <Skeleton className="aspect-[4/3] rounded-xl" />
+                  <div className="space-y-4">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-20 w-full" />
+                    <Skeleton className="h-10 w-full" />
                   </div>
-                </motion.div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-24">
+              {destinations?.map((dest, index) => {
+                const imageUrl = dest.image_url || fallbackImages[dest.slug] || grandCanyonImage;
+                
+                return (
+                  <motion.div
+                    key={dest.id}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={staggerContainer}
+                    className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center ${
+                      index % 2 === 1 ? 'lg:flex-row-reverse' : ''
+                    }`}
+                  >
+                    <motion.div
+                      variants={fadeInUp}
+                      className={`${index % 2 === 1 ? 'lg:order-2' : ''}`}
+                    >
+                      <div className="aspect-[4/3] rounded-xl overflow-hidden shadow-2xl">
+                        <img
+                          src={imageUrl}
+                          alt={dest.title}
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                        />
+                      </div>
+                    </motion.div>
 
-                <motion.div variants={fadeInUp} className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
-                  <div className="flex items-center gap-6 mb-4 text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-accent" />
-                      <span>{exp.distance}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-accent" />
-                      <span>{exp.time}</span>
-                    </div>
-                  </div>
+                    <motion.div variants={fadeInUp} className={`${index % 2 === 1 ? 'lg:order-1' : ''}`}>
+                      <div className="flex items-center gap-6 mb-4 text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-accent" />
+                          <span>{dest.distance}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-accent" />
+                          <span>{dest.drive_time}</span>
+                        </div>
+                      </div>
 
-                  <h3 className="font-serif text-3xl md:text-4xl font-semibold mb-4">{exp.title}</h3>
-                  <p className="text-muted-foreground text-lg leading-relaxed mb-6">{exp.description}</p>
+                      <h3 className="font-serif text-3xl md:text-4xl font-semibold mb-4">{dest.title}</h3>
+                      <p className="text-muted-foreground text-lg leading-relaxed mb-6">{dest.description}</p>
 
-                  <div className="mb-8">
-                    <p className="font-medium mb-3">Highlights:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {exp.highlights.map((highlight) => (
-                        <span
-                          key={highlight}
-                          className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                        >
-                          {highlight}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
-            ))}
-          </div>
+                      {dest.highlights && dest.highlights.length > 0 && (
+                        <div className="mb-8">
+                          <p className="font-medium mb-3">Highlights:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {dest.highlights.map((highlight) => (
+                              <span
+                                key={highlight}
+                                className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                              >
+                                {highlight}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -206,31 +194,39 @@ const Experiences = () => {
             </motion.h2>
           </motion.div>
 
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
-          >
-            {activities.map((activity) => (
-              <motion.div
-                key={activity.category}
-                variants={fadeInUp}
-                className="bg-card rounded-lg p-8 shadow-md"
-              >
-                <h3 className="font-serif text-xl font-semibold mb-4 text-primary">{activity.category}</h3>
-                <ul className="space-y-2">
-                  {activity.items.map((item) => (
-                    <li key={item} className="text-muted-foreground flex items-start gap-2">
-                      <span className="text-accent">•</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </motion.div>
+          {activitiesLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-48 rounded-lg" />
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={staggerContainer}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+            >
+              {activities?.map((activity) => (
+                <motion.div
+                  key={activity.id}
+                  variants={fadeInUp}
+                  className="bg-card rounded-lg p-8 shadow-md"
+                >
+                  <h3 className="font-serif text-xl font-semibold mb-4 text-primary">{activity.category}</h3>
+                  <ul className="space-y-2">
+                    {activity.items.map((item) => (
+                      <li key={item} className="text-muted-foreground flex items-start gap-2">
+                        <span className="text-accent">•</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
       </section>
 

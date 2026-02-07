@@ -18,6 +18,8 @@ import AdminProperties from "./pages/admin/AdminProperties";
 import AdminPropertyEditor from "./pages/admin/AdminPropertyEditor";
 import AdminContacts from "./pages/admin/AdminContacts";
 import AdminOwnerInquiries from "./pages/admin/AdminOwnerInquiries";
+import AdminAreaGuides from "./pages/admin/AdminAreaGuides";
+import AdminAreaGuideEditor from "./pages/admin/AdminAreaGuideEditor";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,8 @@ const App = () => (
             <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/properties" element={<ProtectedRoute><AdminProperties /></ProtectedRoute>} />
             <Route path="/admin/properties/:id" element={<ProtectedRoute><AdminPropertyEditor /></ProtectedRoute>} />
+            <Route path="/admin/area-guides" element={<ProtectedRoute><AdminAreaGuides /></ProtectedRoute>} />
+            <Route path="/admin/area-guides/:id" element={<ProtectedRoute><AdminAreaGuideEditor /></ProtectedRoute>} />
             <Route path="/admin/contacts" element={<ProtectedRoute><AdminContacts /></ProtectedRoute>} />
             <Route path="/admin/owners" element={<ProtectedRoute><AdminOwnerInquiries /></ProtectedRoute>} />
             
