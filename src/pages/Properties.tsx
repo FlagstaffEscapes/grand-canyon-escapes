@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Layout } from '@/components/layout/Layout';
 import { PropertyCard } from '@/components/ui/PropertyCard';
-import { properties } from '@/data/properties';
+import { useActiveProperties } from '@/hooks/useProperties';
+import { Skeleton } from '@/components/ui/skeleton';
 import heroImage from '@/assets/hero-home.jpg';
 
 const fadeInUp = {
@@ -19,11 +20,13 @@ const Properties = () => {
   const [guestFilter, setGuestFilter] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredProperties = properties.filter((property) => {
+  const { data: properties, isLoading } = useActiveProperties();
+
+  const filteredProperties = properties?.filter((property) => {
     const matchesSearch = property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      property.tagline.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesBedrooms = !bedroomFilter || property.bedrooms >= bedroomFilter;
-    const matchesGuests = !guestFilter || property.guests >= guestFilter;
+      (property.tagline?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesBedrooms = !bedroomFilter || (property.bedrooms || 0) >= bedroomFilter;
+    const matchesGuests = !guestFilter || (property.sleeps || 0) >= guestFilter;
     return matchesSearch && matchesBedrooms && matchesGuests;
   });
 
@@ -153,7 +156,25 @@ const Properties = () => {
       {/* Properties Grid */}
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4 lg:px-8">
-          {filteredProperties.length > 0 ? (
+          {isLoading ? (
+            <>
+              <Skeleton className="h-5 w-40 mb-8" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="space-y-4">
+                    <Skeleton className="aspect-[4/3] rounded-lg" />
+                    <Skeleton className="h-6 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                    <div className="flex gap-4">
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-16" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : filteredProperties && filteredProperties.length > 0 ? (
             <>
               <p className="text-muted-foreground mb-8">
                 Showing {filteredProperties.length} {filteredProperties.length === 1 ? 'property' : 'properties'}

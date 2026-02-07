@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MapPin, Clock, Send } from 'lucide-react';
+import { Phone, Mail, MapPin, Clock, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Layout } from '@/components/layout/Layout';
 import { useToast } from '@/hooks/use-toast';
+import { useSubmitContact } from '@/hooks/useContacts';
+import { supabase } from '@/integrations/supabase/client';
 import heroImage from '@/assets/hero-home.jpg';
 
 const fadeInUp = {
@@ -23,6 +25,8 @@ const staggerContainer = {
 
 const About = () => {
   const { toast } = useToast();
+  const submitContact = useSubmitContact();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -31,13 +35,48 @@ const About = () => {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Message sent!",
-      description: "Thank you for reaching out. We'll get back to you within 24 hours.",
-    });
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    setIsSubmitting(true);
+
+    try {
+      // Save to database
+      await submitContact.mutateAsync({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || null,
+        message: `${formData.subject ? `Subject: ${formData.subject}\n\n` : ''}${formData.message}`,
+        submission_type: 'general',
+      });
+
+      // Send email notification
+      try {
+        await supabase.functions.invoke('send-notification', {
+          body: {
+            type: 'contact',
+            data: formData,
+          },
+        });
+      } catch (emailError) {
+        console.error('Email notification failed:', emailError);
+        // Don't fail the submission if email fails
+      }
+
+      toast({
+        title: "Message sent!",
+        description: "Thank you for reaching out. We'll get back to you within 24 hours.",
+      });
+      
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (error) {
+      toast({
+        title: "Failed to send message",
+        description: "Please try again or contact us directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -289,9 +328,18 @@ const About = () => {
                     className="bg-background"
                   />
                 </div>
-                <Button type="submit" variant="accent" size="lg" className="w-full md:w-auto">
-                  <Send className="w-4 h-4" />
-                  Send Message
+                <Button type="submit" variant="accent" size="lg" className="w-full md:w-auto" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      Send Message
+                    </>
+                  )}
                 </Button>
               </form>
             </motion.div>
