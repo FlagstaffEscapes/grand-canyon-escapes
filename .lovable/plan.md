@@ -1,272 +1,117 @@
 
-# Implementation Plan: Admin Panel Testing, RLS Fix, Area Guide Management
+# Implementation Plan: Scroll-to-Top & Pre-Delivery Review
 
-## Overview
+## Primary Fix: Scroll-to-Top on Navigation
 
-This plan addresses multiple issues and enhancements:
-1. Fix the 401 authentication errors on public form submissions
-2. Enable end-to-end testing of the admin panel
-3. Add Area Guide management functionality to the admin panel
-4. Create database table for area guide content
+### The Issue
+When users click navigation links, the page changes but the scroll position remains where it was on the previous page. This creates a jarring experience - users land in the middle of the new page instead of at the top.
+
+### Solution
+Create a `ScrollToTop` component that listens for route changes and scrolls to the top of the page. This is a common React Router pattern.
+
+**New file:** `src/components/layout/ScrollToTop.tsx`
+```tsx
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+
+export const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
+```
+
+**Update:** `src/App.tsx`
+- Import and add `<ScrollToTop />` inside the `<BrowserRouter>` wrapper
 
 ---
 
-## Problem Analysis
+## Additional Issues Identified
 
-### Root Cause: RESTRICTIVE RLS Policies
+### 1. Missing Social Media Links (Minor)
+**Issue:** Footer social media icons point to "#" placeholder links.
+**Location:** `src/components/layout/Footer.tsx` (lines 16-37)
+**Recommendation:** Either remove the social icons or have the client provide actual URLs before delivery.
 
-The contact and owner inquiry form submissions are failing with 401 errors because the RLS policies were created incorrectly. Looking at the current database state:
+### 2. Missing Privacy Policy & Terms Links (Minor)
+**Issue:** Footer links for "Privacy Policy" and "Terms of Service" point to "#".
+**Location:** `src/components/layout/Footer.tsx` (lines 114-115)
+**Recommendation:** These pages need to be created or the links should be removed for launch.
 
-```text
-Policy Name: Admins can do all on contact_submissions 
-Command: ALL
-Permissive: No  <-- THIS IS THE PROBLEM
+### 3. Check Availability Button Non-Functional (Moderate)
+**Issue:** The "Check Availability" button on property detail pages doesn't do anything.
+**Location:** `src/pages/PropertyDetail.tsx` (line 282)
+**Recommendation:** Either:
+- Link to an external booking system (Airbnb, VRBO, etc.)
+- Implement a booking inquiry form
+- Change to "Contact Us" and link to the About page
 
-Policy Name: Public can insert contact submissions 
-Command: INSERT
-Permissive: No  <-- THIS IS ALSO WRONG
-```
+### 4. TODO Comments in index.html (Minor)
+**Issue:** There are TODO comments in the HTML head.
+**Location:** `index.html` (lines 7, 12)
+**Recommendation:** Remove the TODO comments before delivery.
 
-When policies are **RESTRICTIVE** (`Permissive: No`), ALL policies must pass for the operation to succeed. An anonymous user trying to insert:
-- "Admins can do all" policy fails (user is not admin)
-- Even though "Public can insert" would pass, the restrictive admin policy blocks it
+### 5. Sticky Filter Bar Z-Index (Minor UX)
+**Issue:** The filter bar on the Properties page uses `z-40` which may cause it to appear over the header on some edge cases.
+**Location:** `src/pages/Properties.tsx` (line 75)
+**Recommendation:** Ensure the header z-index (`z-50`) is properly layered above filters.
 
-**Solution:** Recreate the INSERT policies as PERMISSIVE (the default), or remove the restrictive qualifier from the admin ALL policy for these tables.
-
----
-
-## Implementation Steps
-
-### Step 1: Fix RLS Policies for Public Form Submissions
-
-Create a database migration to drop and recreate the policies correctly:
-
-**For `contact_submissions` table:**
-- Drop the existing restrictive policies
-- Recreate "Public can insert" as a PERMISSIVE INSERT policy
-- Recreate "Admins can do all" as a PERMISSIVE ALL policy
-
-**For `owner_inquiries` table:**
-- Apply the same fixes
-
-Also remove duplicate policies ("Allow public insert" and "Public can insert" exist for both tables).
-
-### Step 2: Create Area Guide Database Table
-
-Create a new `area_guides` table to store the experiences/destinations content:
-
-```text
-area_guides table:
-- id (uuid, primary key)
-- created_at, updated_at (timestamps)
-- title (text) - "Grand Canyon National Park"
-- slug (text, unique) - "grand-canyon"
-- description (text) - Full description
-- distance (text) - "80 miles"
-- drive_time (text) - "1.5 hours"
-- image_url (text) - Hero image
-- highlights (text array) - ["South Rim viewpoints", "Bright Angel Trail"]
-- category (text) - "destination" or "activity_category"
-- display_order (integer) - For ordering
-- is_active (boolean) - Published or draft
-```
-
-Create a separate `area_guide_activities` table for activity categories:
-
-```text
-area_guide_activities table:
-- id (uuid, primary key)
-- created_at (timestamp)
-- category (text) - "Winter Adventures"
-- items (text array) - ["Arizona Snowbowl skiing", "Cross-country skiing"]
-- display_order (integer)
-- is_active (boolean)
-```
-
-**RLS Policies:**
-- Public can SELECT where is_active = true
-- Admins have full access
-
-### Step 3: Seed Initial Area Guide Data
-
-Create a migration to insert the existing templated data from `Experiences.tsx`:
-
-**Destinations:**
-1. Grand Canyon National Park
-2. Sedona
-3. Downtown Flagstaff
-
-**Activity Categories:**
-1. Winter Adventures
-2. Outdoor Recreation
-3. Stargazing
-4. Cultural Experiences
-
-### Step 4: Create Admin Area Guide Pages
-
-**New files to create:**
-
-1. `src/pages/admin/AdminAreaGuides.tsx`
-   - List view showing all area guides and activity categories
-   - Toggle active/inactive status
-   - Edit and delete buttons
-   - Tabs for "Destinations" and "Activities"
-
-2. `src/pages/admin/AdminAreaGuideEditor.tsx`
-   - Form for editing/creating destinations
-   - Image upload for hero image
-   - Highlights management (add/remove tags)
-   - Save draft / Publish buttons
-
-3. `src/hooks/useAreaGuides.ts`
-   - React Query hooks for CRUD operations
-   - `useAreaGuides()` - Fetch all
-   - `useAreaGuideBySlug()` - Fetch single
-   - `useCreateAreaGuide()`, `useUpdateAreaGuide()`, `useDeleteAreaGuide()`
-   - Similar hooks for activity categories
-
-### Step 5: Update Admin Navigation
-
-Modify `AdminLayout.tsx` to add:
-- "Area Guide" navigation item in the sidebar
-- Link to `/admin/area-guides`
-
-### Step 6: Update App.tsx Routes
-
-Add new protected routes:
-- `/admin/area-guides` - List view
-- `/admin/area-guides/:id` - Editor
-
-### Step 7: Update Experiences Page to Use Database
-
-Modify `src/pages/Experiences.tsx`:
-- Import and use the new `useAreaGuides` hooks
-- Fetch destinations and activities from the database
-- Add skeleton loaders during loading
-- Handle empty states
+### 6. Email Domain Consistency
+**Issue:** Two different email domains are used:
+- `info@flagstaffescapes.com` (Footer, About page)
+- `owners@flagstaffescapes.com` (Owners page)
+**Recommendation:** Verify with client that both email addresses are set up and working.
 
 ---
 
-## Technical Details
+## Files to Change
 
-### Database Migration SQL
-
-```sql
--- Fix RLS policies for contact_submissions
-DROP POLICY IF EXISTS "Admins can do all on contact_submissions" ON public.contact_submissions;
-DROP POLICY IF EXISTS "Allow public insert on contact_submissions" ON public.contact_submissions;
-DROP POLICY IF EXISTS "Public can insert contact submissions" ON public.contact_submissions;
-
-CREATE POLICY "Admins can do all on contact_submissions" ON public.contact_submissions
-    FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin'));
-
-CREATE POLICY "Public can insert contact submissions" ON public.contact_submissions
-    FOR INSERT TO anon, authenticated WITH CHECK (true);
-
--- Same pattern for owner_inquiries table
-
--- Create area_guides table
-CREATE TABLE public.area_guides (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz NOT NULL DEFAULT now(),
-    title text NOT NULL,
-    slug text UNIQUE NOT NULL,
-    description text,
-    distance text,
-    drive_time text,
-    image_url text,
-    highlights text[] DEFAULT '{}',
-    display_order integer DEFAULT 0,
-    is_active boolean DEFAULT false
-);
-
--- Create area_guide_activities table
-CREATE TABLE public.area_guide_activities (
-    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_at timestamptz NOT NULL DEFAULT now(),
-    category text NOT NULL,
-    items text[] DEFAULT '{}',
-    display_order integer DEFAULT 0,
-    is_active boolean DEFAULT true
-);
-
--- Enable RLS
-ALTER TABLE public.area_guides ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.area_guide_activities ENABLE ROW LEVEL SECURITY;
-
--- RLS Policies
-CREATE POLICY "Public can view active area guides" ON public.area_guides
-    FOR SELECT USING (is_active = true);
-
-CREATE POLICY "Admins can do all on area_guides" ON public.area_guides
-    FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin'));
-
--- Similar for activities table
-```
-
-### Admin Area Guide List Component Structure
-
-```text
-AdminAreaGuides.tsx
-+-- Tabs: Destinations | Activities
-+-- Destinations Tab
-|   +-- "Add Destination" button
-|   +-- Table/Grid of destinations
-|       +-- Image thumbnail
-|       +-- Title
-|       +-- Distance/Time
-|       +-- Status toggle
-|       +-- Edit/Delete buttons
-+-- Activities Tab
-    +-- "Add Category" button
-    +-- List of activity categories
-        +-- Category name
-        +-- Item count
-        +-- Edit/Delete buttons
-```
-
-### File Changes Summary
-
-**New Files:**
-- `src/pages/admin/AdminAreaGuides.tsx`
-- `src/pages/admin/AdminAreaGuideEditor.tsx`
-- `src/hooks/useAreaGuides.ts`
-
-**Modified Files:**
-- `src/App.tsx` - Add new routes
-- `src/components/admin/AdminLayout.tsx` - Add nav item
-- `src/pages/Experiences.tsx` - Use database data
-
-**Database Migrations:**
-- Fix RLS policies for contact_submissions and owner_inquiries
-- Create area_guides and area_guide_activities tables
-- Seed initial data from existing template
+| File | Change |
+|------|--------|
+| `src/components/layout/ScrollToTop.tsx` | **Create** - New scroll-to-top component |
+| `src/App.tsx` | **Modify** - Add ScrollToTop component inside BrowserRouter |
+| `index.html` | **Modify** - Remove TODO comments |
 
 ---
 
-## Testing Checklist
+## Implementation Details
 
-After implementation:
+### Step 1: Create ScrollToTop Component
+A simple, lightweight component that hooks into React Router's location changes.
 
-1. **Form Submissions (Public)**
-   - Submit contact form on About page - should succeed
-   - Submit owner inquiry form on Owners page - should succeed
-   - Verify entries appear in database
-   - Verify email notifications are sent
+### Step 2: Update App.tsx
+Add the component after the BrowserRouter opening tag but before Routes:
 
-2. **Admin Panel Flow**
-   - Login at /admin/login
-   - View dashboard with stats
-   - Add new property with images
-   - Publish property and verify on public site
-   - View contact submissions
-   - View owner inquiries
+```tsx
+<BrowserRouter>
+  <ScrollToTop />
+  <Routes>
+    ...
+  </Routes>
+</BrowserRouter>
+```
 
-3. **Area Guide Management**
-   - View area guides list
-   - Edit existing destination
-   - Add new destination with image
-   - Manage activity categories
-   - Toggle active status
-   - Verify changes appear on public Experiences page
+### Step 3: Clean Up index.html
+Remove the two TODO comment lines to present a polished codebase.
+
+---
+
+## Summary Before Delivery
+
+**Critical (blocking):** None - the site is functional
+
+**Recommended fixes:**
+1. Scroll-to-top on navigation (implementing now)
+2. Remove TODO comments from index.html (implementing now)
+
+**Client decisions needed:**
+- Social media URLs
+- Privacy Policy / Terms of Service pages
+- Check Availability button behavior
+- Confirm both email addresses work
+
+The site is in good shape overall - clean code, consistent design, working forms, and functional admin panel.
