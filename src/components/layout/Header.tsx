@@ -89,7 +89,7 @@ export const Header = () => {
               className="hidden sm:inline-flex"
               asChild
             >
-              <Link to="/properties">View Properties</Link>
+              <Link to="/owners">List Your Property</Link>
             </Button>
 
             {/* Mobile Menu Button */}
@@ -134,7 +134,7 @@ export const Header = () => {
               <span>360-775-0592</span>
             </a>
             <Button variant="accent" className="mt-2" asChild>
-              <Link to="/properties">View Properties</Link>
+              <Link to="/owners">List Your Property</Link>
             </Button>
           </nav>
         </div>

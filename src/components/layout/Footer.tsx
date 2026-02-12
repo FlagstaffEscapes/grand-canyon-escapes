@@ -10,7 +10,7 @@ export const Footer = () => {
           <div className="space-y-4">
             <h3 className="font-serif text-2xl font-semibold">Flagstaff Escapes</h3>
             <p className="text-cream/80 text-sm leading-relaxed">
-              Luxury vacation rentals in Flagstaff, Arizona. Your gateway to the Grand Canyon and the stunning beauty of Northern Arizona.
+              Flagstaff's premier vacation rental management company. We help property owners maximize revenue with full-service management and a luxury guest experience.
             </p>
             <div className="flex items-center gap-4 pt-2">
               <a
@@ -41,11 +41,11 @@ export const Footer = () => {
           <div>
             <h4 className="font-serif text-lg font-semibold mb-4">Quick Links</h4>
             <nav className="flex flex-col gap-3">
-              <Link to="/properties" className="text-cream/80 hover:text-cream-light transition-colors text-sm">
-                Browse Properties
-              </Link>
               <Link to="/owners" className="text-cream/80 hover:text-cream-light transition-colors text-sm">
                 Property Owners
+              </Link>
+              <Link to="/properties" className="text-cream/80 hover:text-cream-light transition-colors text-sm">
+                Browse Properties
               </Link>
               <Link to="/experiences" className="text-cream/80 hover:text-cream-light transition-colors text-sm">
                 Area Guide
