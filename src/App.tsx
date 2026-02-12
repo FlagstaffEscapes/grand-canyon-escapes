@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/admin/ProtectedRoute";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
@@ -43,7 +43,8 @@ const App = () => (
             
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
-            <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin" element={<Navigate to="/admin/login" replace />} />
+            <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/properties" element={<ProtectedRoute><AdminProperties /></ProtectedRoute>} />
             <Route path="/admin/properties/:id" element={<ProtectedRoute><AdminPropertyEditor /></ProtectedRoute>} />
             <Route path="/admin/area-guides" element={<ProtectedRoute><AdminAreaGuides /></ProtectedRoute>} />

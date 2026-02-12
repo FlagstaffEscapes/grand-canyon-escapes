@@ -17,7 +17,7 @@ const AdminLogin = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  const from = location.state?.from?.pathname || '/admin';
+  const from = location.state?.from?.pathname || '/admin/dashboard';
 
   useEffect(() => {
     if (!isLoading && user && isAdmin) {
