@@ -7,6 +7,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// HTML entity escaping to prevent XSS in emails
+const escapeHtml = (str: string): string => {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
 interface NotificationRequest {
   type: "contact" | "owner";
   data: {
@@ -46,6 +56,36 @@ const handler = async (req: Request): Promise<Response> => {
     const resend = new Resend(resendApiKey);
     const { type, data }: NotificationRequest = await req.json();
 
+    // Input validation
+    if (!data || !data.name || !data.email) {
+      return new Response(
+        JSON.stringify({ error: "Name and email are required" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (typeof data.name !== "string" || data.name.length > 200) {
+      return new Response(
+        JSON.stringify({ error: "Invalid name" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (typeof data.email !== "string" || !emailRegex.test(data.email) || data.email.length > 255) {
+      return new Response(
+        JSON.stringify({ error: "Invalid email" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
+    if (data.message && (typeof data.message !== "string" || data.message.length > 5000)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid message" }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     const timestamp = new Date().toLocaleString("en-US", {
       timeZone: "America/Phoenix",
       dateStyle: "full",
@@ -55,6 +95,16 @@ const handler = async (req: Request): Promise<Response> => {
     let subject: string;
     let htmlContent: string;
 
+    // Sanitize all user inputs before embedding in HTML
+    const safeName = escapeHtml(data.name);
+    const safeEmail = escapeHtml(data.email);
+    const safePhone = data.phone ? escapeHtml(data.phone) : null;
+    const safeSubject = data.subject ? escapeHtml(data.subject) : null;
+    const safeMessage = data.message ? escapeHtml(data.message).replace(/\n/g, "<br>") : null;
+    const safeAddress = data.propertyAddress ? escapeHtml(data.propertyAddress) : null;
+    const safeType = data.propertyType ? escapeHtml(data.propertyType) : null;
+    const safeBedrooms = data.bedrooms ? escapeHtml(data.bedrooms) : null;
+
     if (type === "owner") {
       subject = "New Owner Inquiry - Flagstaff Escapes";
       htmlContent = `
@@ -62,15 +112,15 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Submitted:</strong> ${timestamp}</p>
         <hr />
         <h2>Contact Information</h2>
-        <p><strong>Name:</strong> ${data.name}</p>
-        <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
-        ${data.phone ? `<p><strong>Phone:</strong> <a href="tel:${data.phone}">${data.phone}</a></p>` : ""}
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
+        ${safePhone ? `<p><strong>Phone:</strong> <a href="tel:${safePhone}">${safePhone}</a></p>` : ""}
         <h2>Property Details</h2>
-        ${data.propertyAddress ? `<p><strong>Address:</strong> ${data.propertyAddress}</p>` : ""}
-        ${data.propertyType ? `<p><strong>Type:</strong> ${data.propertyType}</p>` : ""}
-        ${data.bedrooms ? `<p><strong>Bedrooms:</strong> ${data.bedrooms}</p>` : ""}
+        ${safeAddress ? `<p><strong>Address:</strong> ${safeAddress}</p>` : ""}
+        ${safeType ? `<p><strong>Type:</strong> ${safeType}</p>` : ""}
+        ${safeBedrooms ? `<p><strong>Bedrooms:</strong> ${safeBedrooms}</p>` : ""}
         <p><strong>Currently Renting:</strong> ${data.currentlyRenting ? "Yes" : "No"}</p>
-        ${data.message ? `<h2>Message</h2><p>${data.message.replace(/\n/g, "<br>")}</p>` : ""}
+        ${safeMessage ? `<h2>Message</h2><p>${safeMessage}</p>` : ""}
       `;
     } else {
       subject = "New Contact Submission - Flagstaff Escapes";
@@ -79,11 +129,11 @@ const handler = async (req: Request): Promise<Response> => {
         <p><strong>Submitted:</strong> ${timestamp}</p>
         <hr />
         <h2>Contact Information</h2>
-        <p><strong>Name:</strong> ${data.name}</p>
-        <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
-        ${data.phone ? `<p><strong>Phone:</strong> <a href="tel:${data.phone}">${data.phone}</a></p>` : ""}
-        ${data.subject ? `<p><strong>Subject:</strong> ${data.subject}</p>` : ""}
-        ${data.message ? `<h2>Message</h2><p>${data.message.replace(/\n/g, "<br>")}</p>` : ""}
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> <a href="mailto:${safeEmail}">${safeEmail}</a></p>
+        ${safePhone ? `<p><strong>Phone:</strong> <a href="tel:${safePhone}">${safePhone}</a></p>` : ""}
+        ${safeSubject ? `<p><strong>Subject:</strong> ${safeSubject}</p>` : ""}
+        ${safeMessage ? `<h2>Message</h2><p>${safeMessage}</p>` : ""}
       `;
     }
 
@@ -95,16 +145,16 @@ const handler = async (req: Request): Promise<Response> => {
       reply_to: data.email,
     });
 
-    console.log("Email sent successfully:", emailResponse);
+    console.log("Email sent successfully");
 
-    return new Response(JSON.stringify({ success: true, ...emailResponse }), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
     console.error("Error in send-notification function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "An internal error occurred" }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
