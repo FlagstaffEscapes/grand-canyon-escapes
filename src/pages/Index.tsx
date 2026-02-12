@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Star, Shield, MapPin } from 'lucide-react';
+import { ArrowRight, Star, Shield, MapPin, TrendingUp, HandshakeIcon, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
 import { PropertyCard } from '@/components/ui/PropertyCard';
@@ -54,22 +54,22 @@ const Index = () => {
               variants={fadeInUp}
               className="text-cream-light/90 uppercase tracking-[0.3em] text-sm font-medium"
             >
-              Luxury Vacation Rentals • Flagstaff, Arizona
+              Vacation Rental Management • Flagstaff, Arizona
             </motion.p>
 
             <motion.h1
               variants={fadeInUp}
               className="font-serif text-5xl md:text-7xl lg:text-8xl text-cream-light text-shadow-lg leading-tight"
             >
-              Your Gateway to the
-              <span className="block italic text-dusty-gold">Grand Canyon</span>
+              Flagstaff's Premier
+              <span className="block italic text-dusty-gold">Rental Management</span>
             </motion.h1>
 
             <motion.p
               variants={fadeInUp}
               className="text-cream/90 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed"
             >
-              Discover handpicked luxury cabins and mountain homes in the heart of Northern Arizona. Where rustic elegance meets unforgettable adventure.
+              We turn luxury properties into top-performing vacation rentals. Full-service management, maximum returns.
             </motion.p>
 
             <motion.div
@@ -77,13 +77,13 @@ const Index = () => {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             >
               <Button variant="hero" size="xl" asChild>
-                <Link to="/properties">
-                  Browse Properties
+                <Link to="/owners">
+                  Partner With Us
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
               <Button variant="outline-light" size="xl" asChild>
-                <Link to="/owners">List Your Property</Link>
+                <Link to="/properties">Browse Properties</Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -107,7 +107,7 @@ const Index = () => {
         </motion.div>
       </section>
 
-      {/* Value Proposition */}
+      {/* Value Proposition — Owner Focused */}
       <section className="py-20 bg-cream-light">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
@@ -119,19 +119,19 @@ const Index = () => {
           >
             {[
               {
-                icon: Star,
-                title: 'Curated Luxury',
-                description: 'Every property is hand-selected for exceptional quality, stunning views, and premium amenities.',
+                icon: TrendingUp,
+                title: 'Maximize Revenue',
+                description: 'Dynamic pricing and multi-platform marketing that consistently outperforms market averages for our owners.',
               },
               {
-                icon: Shield,
-                title: 'Trusted Service',
-                description: 'Local expertise and 24/7 guest support ensure your mountain getaway is truly effortless.',
+                icon: HandshakeIcon,
+                title: 'Hands-Off Management',
+                description: 'Full-service operations from guest communication and bookings to cleaning, maintenance, and reporting.',
               },
               {
-                icon: MapPin,
-                title: 'Prime Location',
-                description: 'Just an hour from the Grand Canyon, with easy access to Sedona, hiking, and ski resorts.',
+                icon: Compass,
+                title: 'Local Expertise',
+                description: 'Deep Flagstaff knowledge and a curated luxury brand that attracts premium guests and repeat bookings.',
               },
             ].map((item) => (
               <motion.div
@@ -150,7 +150,38 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Featured Properties */}
+      {/* For Owners CTA — Moved Higher */}
+      <section className="py-24 bg-primary">
+        <div className="container mx-auto px-4 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="max-w-4xl mx-auto text-center text-primary-foreground"
+          >
+            <motion.p variants={fadeInUp} className="uppercase tracking-[0.2em] text-sm font-medium mb-4 opacity-80">
+              Property Owners
+            </motion.p>
+            <motion.h2 variants={fadeInUp} className="font-serif text-4xl md:text-5xl font-semibold mb-6">
+              Maximize Your Property's Potential
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="text-cream/80 text-lg leading-relaxed mb-8">
+              Partner with Flagstaff's premier vacation rental management company. We handle everything from marketing to guest services, so you can enjoy passive income without the hassle.
+            </motion.p>
+            <motion.div variants={fadeInUp}>
+              <Button variant="hero" size="lg" asChild>
+                <Link to="/owners">
+                  Learn About Management
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+              </Button>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Featured Properties — Social Proof */}
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
@@ -161,13 +192,13 @@ const Index = () => {
             className="text-center mb-16"
           >
             <motion.p variants={fadeInUp} className="text-accent uppercase tracking-[0.2em] text-sm font-medium mb-4">
-              Featured Retreats
+              Our Portfolio
             </motion.p>
             <motion.h2 variants={fadeInUp} className="font-serif text-4xl md:text-5xl font-semibold mb-6">
-              Handpicked Luxury Escapes
+              Properties We Manage
             </motion.h2>
             <motion.p variants={fadeInUp} className="text-muted-foreground max-w-2xl mx-auto text-lg">
-              From intimate cabins perfect for couples to grand estates for family reunions, find your perfect mountain retreat.
+              See the luxury properties thriving under our management — from intimate cabins to grand mountain estates.
             </motion.p>
           </motion.div>
 
@@ -207,7 +238,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Grand Canyon CTA */}
+      {/* Grand Canyon — Market Demand Proof */}
       <section className="relative py-32 overflow-hidden">
         <div className="absolute inset-0">
           <img
@@ -230,19 +261,19 @@ const Index = () => {
               variants={fadeInUp}
               className="font-serif text-4xl md:text-5xl lg:text-6xl text-shadow-lg mb-6"
             >
-              One Hour from
-              <span className="italic text-dusty-gold"> Wonder</span>
+              A Market That
+              <span className="italic text-dusty-gold"> Sells Itself</span>
             </motion.h2>
             <motion.p
               variants={fadeInUp}
               className="text-cream/90 text-lg md:text-xl leading-relaxed mb-8"
             >
-              Wake up in luxury, then explore one of the world's most breathtaking natural wonders. Our Flagstaff location puts you at the heart of Arizona's most spectacular landscapes.
+              Flagstaff's proximity to the Grand Canyon drives year-round demand, making it one of Arizona's most lucrative vacation rental markets. Your property deserves to be part of it.
             </motion.p>
             <motion.div variants={fadeInUp}>
               <Button variant="hero" size="lg" asChild>
-                <Link to="/experiences">
-                  Explore the Area
+                <Link to="/owners">
+                  Start Earning
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               </Button>
@@ -251,7 +282,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Owner Testimonials */}
       <section className="py-24 bg-cream-light">
         <div className="container mx-auto px-4 lg:px-8">
           <motion.div
@@ -262,10 +293,10 @@ const Index = () => {
             className="text-center mb-16"
           >
             <motion.p variants={fadeInUp} className="text-accent uppercase tracking-[0.2em] text-sm font-medium mb-4">
-              Guest Experiences
+              Owner Experiences
             </motion.p>
             <motion.h2 variants={fadeInUp} className="font-serif text-4xl md:text-5xl font-semibold">
-              What Our Guests Say
+              What Our Owners Say
             </motion.h2>
           </motion.div>
 
@@ -278,19 +309,19 @@ const Index = () => {
           >
             {[
               {
-                quote: "Absolutely stunning property! The views were incredible, and the cabin had everything we needed for a perfect family vacation.",
-                author: "Sarah M.",
-                location: "Los Angeles, CA",
+                quote: "Since partnering with Flagstaff Escapes, our rental revenue increased by 40%. Their pricing strategy and marketing are second to none.",
+                author: "David R.",
+                location: "Property Owner, Flagstaff",
               },
               {
-                quote: "The perfect base for our Grand Canyon adventure. Luxurious, clean, and the hot tub under the stars was unforgettable.",
-                author: "Michael T.",
-                location: "Denver, CO",
+                quote: "I live out of state and never worry about my property. They handle everything — guests, maintenance, cleaning — and I just watch the income come in.",
+                author: "Karen W.",
+                location: "Property Owner, Scottsdale",
               },
               {
-                quote: "Flagstaff Escapes exceeded all our expectations. The attention to detail and personal touches made us feel right at home.",
-                author: "Jennifer L.",
-                location: "Phoenix, AZ",
+                quote: "The monthly reports are detailed and transparent. I always know exactly how my property is performing. Truly a professional operation.",
+                author: "James & Lisa P.",
+                location: "Property Owners, Phoenix",
               },
             ].map((testimonial, index) => (
               <motion.div
@@ -310,37 +341,6 @@ const Index = () => {
                 </div>
               </motion.div>
             ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* For Owners CTA */}
-      <section className="py-24 bg-primary">
-        <div className="container mx-auto px-4 lg:px-8">
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={staggerContainer}
-            className="max-w-4xl mx-auto text-center text-primary-foreground"
-          >
-            <motion.p variants={fadeInUp} className="uppercase tracking-[0.2em] text-sm font-medium mb-4 opacity-80">
-              Property Owners
-            </motion.p>
-            <motion.h2 variants={fadeInUp} className="font-serif text-4xl md:text-5xl font-semibold mb-6">
-              Maximize Your Property's Potential
-            </motion.h2>
-            <motion.p variants={fadeInUp} className="text-cream/80 text-lg leading-relaxed mb-8">
-              Partner with Flagstaff's premier vacation rental management company. We handle everything from marketing to guest services, so you can enjoy passive income without the hassle.
-            </motion.p>
-            <motion.div variants={fadeInUp}>
-              <Button variant="hero" size="lg" asChild>
-                <Link to="/owners">
-                  Learn About Management
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              </Button>
-            </motion.div>
           </motion.div>
         </div>
       </section>
