@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Search, Edit, Trash2, Eye, EyeOff, MoreHorizontal } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ const AdminProperties = () => {
   const toggleStatus = useTogglePropertyStatus();
   const deleteProperty = useDeleteProperty();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const filteredProperties = properties?.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -146,7 +147,7 @@ const AdminProperties = () => {
                 </TableRow>
               ) : (
                 filteredProperties?.map((property) => (
-                  <TableRow key={property.id}>
+                  <TableRow key={property.id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/admin/properties/${property.id}`)}>
                     <TableCell>
                       <img
                         src={getPrimaryImage(property)}
@@ -168,7 +169,7 @@ const AdminProperties = () => {
                     <TableCell className="hidden md:table-cell">
                       ${property.price_per_night}/night
                     </TableCell>
-                    <TableCell>
+                    <TableCell onClick={e => e.stopPropagation()}>
                       <button
                         onClick={() => handleToggleStatus(property.id, property.is_active || false)}
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
@@ -190,7 +191,7 @@ const AdminProperties = () => {
                         )}
                       </button>
                     </TableCell>
-                    <TableCell>
+                    <TableCell onClick={e => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon">
