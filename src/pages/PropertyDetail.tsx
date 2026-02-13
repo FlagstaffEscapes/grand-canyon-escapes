@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Bed, Bath, Users, MapPin, Check, ChevronLeft, 
+  Bed, Bath, Users, MapPin, Check, ChevronLeft, ChevronRight as ChevronRightIcon,
   Wifi, Flame, Mountain, Utensils, Tv, Car, Sparkles,
-  Wine, Dumbbell, Waves, Loader2
+  Wine, Dumbbell, Waves, Loader2, X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
 import { usePropertyBySlug } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
+import AvailabilityChecker from '@/components/AvailabilityChecker';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -40,6 +42,8 @@ const amenityIcons: Record<string, React.ElementType> = {
 const PropertyDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: property, isLoading, error } = usePropertyBySlug(slug || '');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   if (isLoading) {
     return (
@@ -132,7 +136,8 @@ const PropertyDetail = () => {
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="aspect-[4/3] rounded-lg overflow-hidden"
+              className="aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
+              onClick={() => { setLightboxIndex(0); setLightboxOpen(true); }}
             >
               <img
                 src={galleryImages[0]}
@@ -147,7 +152,8 @@ const PropertyDetail = () => {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1 * (index + 1) }}
-                  className="aspect-[4/3] rounded-lg overflow-hidden"
+                  className="aspect-[4/3] rounded-lg overflow-hidden cursor-pointer"
+                  onClick={() => { setLightboxIndex(index + 1); setLightboxOpen(true); }}
                 >
                   <img
                     src={img}
@@ -156,6 +162,26 @@ const PropertyDetail = () => {
                   />
                 </motion.div>
               ))}
+              {galleryImages.length > 3 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className="aspect-[4/3] rounded-lg overflow-hidden cursor-pointer relative"
+                  onClick={() => { setLightboxIndex(3); setLightboxOpen(true); }}
+                >
+                  <img
+                    src={galleryImages[3]}
+                    alt={`${property.name} 4`}
+                    className="w-full h-full object-cover"
+                  />
+                  {galleryImages.length > 4 && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <span className="text-white font-semibold text-lg">+{galleryImages.length - 3} more</span>
+                    </div>
+                  )}
+                </motion.div>
+              )}
               {galleryImages.length <= 1 && (
                 <>
                   <div className="aspect-[4/3] rounded-lg bg-muted flex items-center justify-center">
@@ -170,6 +196,51 @@ const PropertyDetail = () => {
           </div>
         </div>
       </section>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+            onClick={() => setLightboxOpen(false)}
+          >
+            <button className="absolute top-4 right-4 text-white/80 hover:text-white p-2" onClick={() => setLightboxOpen(false)}>
+              <X className="w-8 h-8" />
+            </button>
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  className="absolute left-4 text-white/80 hover:text-white p-2"
+                  onClick={e => { e.stopPropagation(); setLightboxIndex((lightboxIndex - 1 + galleryImages.length) % galleryImages.length); }}
+                >
+                  <ChevronLeft className="w-10 h-10" />
+                </button>
+                <button
+                  className="absolute right-4 text-white/80 hover:text-white p-2"
+                  onClick={e => { e.stopPropagation(); setLightboxIndex((lightboxIndex + 1) % galleryImages.length); }}
+                >
+                  <ChevronRightIcon className="w-10 h-10" />
+                </button>
+              </>
+            )}
+            <motion.img
+              key={lightboxIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              src={galleryImages[lightboxIndex]}
+              alt={`${property.name} ${lightboxIndex + 1}`}
+              className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
+              onClick={e => e.stopPropagation()}
+            />
+            <div className="absolute bottom-6 text-white/70 text-sm">
+              {lightboxIndex + 1} / {galleryImages.length}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Property Info */}
       <section className="py-12 bg-background">
@@ -279,9 +350,7 @@ const PropertyDetail = () => {
                 </div>
 
                 <div className="space-y-4">
-                  <Button variant="accent" size="xl" className="w-full">
-                    Check Availability
-                  </Button>
+                  <AvailabilityChecker propertyId={property.id} propertyName={property.name} />
                   <Button variant="outline" size="lg" className="w-full" asChild>
                     <Link to="/about">Contact Us</Link>
                   </Button>

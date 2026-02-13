@@ -22,6 +22,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
+import BookingCalendar from '@/components/admin/BookingCalendar';
 
 const AMENITY_OPTIONS = [
   { name: 'WiFi', icon: Wifi },
@@ -606,6 +607,11 @@ const AdminPropertyEditor = () => {
               </div>
             )}
           </section>
+
+          {/* Booking Calendar - only show for existing properties */}
+          {!isNew && id && (
+            <BookingCalendar propertyId={id} />
+          )}
 
           {/* Settings */}
           <section className="bg-card rounded-xl border border-border p-6 space-y-4">

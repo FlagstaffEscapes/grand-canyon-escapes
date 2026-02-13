@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Plus, Pencil, Trash2, MapPin, Clock, X } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
@@ -38,6 +38,7 @@ import {
 } from '@/hooks/useAreaGuides';
 
 const AdminAreaGuides = () => {
+  const navigate = useNavigate();
   const { data: guides, isLoading: guidesLoading } = useAreaGuides(true);
   const { data: activities, isLoading: activitiesLoading } = useAreaGuideActivities(true);
   const updateGuide = useUpdateAreaGuide();
@@ -134,7 +135,7 @@ const AdminAreaGuides = () => {
             ) : (
               <div className="space-y-4">
                 {guides?.map((guide) => (
-                  <Card key={guide.id}>
+                  <Card key={guide.id} className="cursor-pointer hover:bg-muted/30 transition-colors" onClick={() => navigate(`/admin/area-guides/${guide.id}`)}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
                         {guide.image_url && (
@@ -160,7 +161,7 @@ const AdminAreaGuides = () => {
                             {guide.description}
                           </p>
                         </div>
-                        <div className="flex items-center gap-4 flex-shrink-0">
+                        <div className="flex items-center gap-4 flex-shrink-0" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center gap-2">
                             <Switch
                               checked={guide.is_active}
