@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, DollarSign, Users, TrendingUp, Shield, Phone, Mail, Loader2 } from 'lucide-react';
+import { Check, DollarSign, Users, TrendingUp, Shield, Phone, Mail, Loader2, Star, CalendarCheck, Camera, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,7 +10,7 @@ import { Layout } from '@/components/layout/Layout';
 import { useToast } from '@/hooks/use-toast';
 import { useSubmitOwnerInquiry } from '@/hooks/useContacts';
 import { supabase } from '@/integrations/supabase/client';
-import propertyExterior from '@/assets/property-exterior-1.jpg';
+import heroImage from '@/assets/hero-home.jpg';
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -45,7 +45,6 @@ const Owners = () => {
     setIsSubmitting(true);
 
     try {
-      // Save to database
       await submitInquiry.mutateAsync({
         name: formData.name,
         email: formData.email,
@@ -57,17 +56,12 @@ const Owners = () => {
         message: formData.message || null,
       });
 
-      // Send email notification
       try {
         await supabase.functions.invoke('send-notification', {
-          body: {
-            type: 'owner',
-            data: formData,
-          },
+          body: { type: 'owner', data: formData },
         });
       } catch (emailError) {
         console.error('Email notification failed:', emailError);
-        // Don't fail the submission if email fails
       }
 
       toast({
@@ -76,14 +70,8 @@ const Owners = () => {
       });
       
       setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        propertyAddress: '',
-        propertyType: '',
-        bedrooms: '',
-        currentlyRenting: false,
-        message: '',
+        name: '', email: '', phone: '', propertyAddress: '',
+        propertyType: '', bedrooms: '', currentlyRenting: false, message: '',
       });
     } catch (error) {
       toast({
@@ -119,6 +107,27 @@ const Owners = () => {
     },
   ];
 
+  const howItWorks = [
+    {
+      icon: CalendarCheck,
+      step: '01',
+      title: 'Schedule a Consultation',
+      description: 'We evaluate your property, discuss your goals, and outline a custom management plan tailored to maximize your returns.',
+    },
+    {
+      icon: Camera,
+      step: '02',
+      title: 'We Handle Setup',
+      description: 'Professional photography, compelling listing creation, pricing strategy, and multi-platform distribution — all handled by us.',
+    },
+    {
+      icon: Sparkles,
+      step: '03',
+      title: 'Start Earning',
+      description: 'Sit back while we manage everything — bookings, guests, cleaning, maintenance — and watch your returns grow.',
+    },
+  ];
+
   const services = [
     'Professional photography and listing creation',
     'Dynamic pricing optimization',
@@ -132,14 +141,32 @@ const Owners = () => {
     'Emergency response coordination',
   ];
 
+  const testimonials = [
+    {
+      quote: "Since partnering with Flagstaff Escapes, our rental revenue increased by 40%. Their pricing strategy and marketing are second to none.",
+      author: "David R.",
+      location: "Property Owner, Flagstaff",
+    },
+    {
+      quote: "I live out of state and never worry about my property. They handle everything — guests, maintenance, cleaning — and I just watch the income come in.",
+      author: "Karen W.",
+      location: "Property Owner, Scottsdale",
+    },
+    {
+      quote: "The monthly reports are detailed and transparent. I always know exactly how my property is performing. Truly a professional operation.",
+      author: "James & Lisa P.",
+      location: "Property Owners, Phoenix",
+    },
+  ];
+
   return (
     <Layout>
       {/* Hero Section */}
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
-            src={propertyExterior}
-            alt="Luxury property management"
+            src={heroImage}
+            alt="Mountain cabin in Flagstaff, Arizona"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-charcoal/70" />
@@ -154,13 +181,13 @@ const Owners = () => {
           >
             <motion.p
               variants={fadeInUp}
-              className="text-cream-light/90 uppercase tracking-[0.3em] text-sm font-medium mb-4"
+              className="font-serif text-2xl md:text-3xl text-dusty-gold italic mb-4"
             >
-              For Property Owners
+              Flagstaff Escapes
             </motion.p>
             <motion.h1
               variants={fadeInUp}
-              className="font-serif text-5xl md:text-6xl text-cream-light text-shadow-lg mb-6"
+              className="font-serif text-4xl md:text-5xl lg:text-6xl text-cream-light text-shadow-lg mb-6"
             >
               Turn Your Property Into
               <span className="italic text-dusty-gold"> Passive Income</span>
@@ -169,7 +196,7 @@ const Owners = () => {
               variants={fadeInUp}
               className="text-cream/90 text-lg md:text-xl"
             >
-              Partner with Flagstaff's premier luxury vacation rental management company
+              Full-service vacation rental management. Maximum returns, zero hassle.
             </motion.p>
           </motion.div>
         </div>
@@ -221,6 +248,49 @@ const Owners = () => {
         </div>
       </section>
 
+      {/* How It Works */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-4 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="text-center mb-16"
+          >
+            <motion.p variants={fadeInUp} className="text-accent uppercase tracking-[0.2em] text-sm font-medium mb-4">
+              Getting Started
+            </motion.p>
+            <motion.h2 variants={fadeInUp} className="font-serif text-4xl md:text-5xl font-semibold">
+              How It Works
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {howItWorks.map((step) => (
+              <motion.div
+                key={step.step}
+                variants={fadeInUp}
+                className="text-center p-8 bg-card rounded-lg shadow-md"
+              >
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
+                  <step.icon className="w-8 h-8" />
+                </div>
+                <p className="text-sm font-bold text-accent uppercase tracking-widest mb-2">Step {step.step}</p>
+                <h3 className="font-serif text-xl font-semibold mb-3">{step.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{step.description}</p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
       {/* Commission Structure */}
       <section className="py-24 bg-primary">
         <div className="container mx-auto px-4 lg:px-8">
@@ -235,17 +305,80 @@ const Owners = () => {
               Simple, Transparent Pricing
             </motion.h2>
             <motion.div variants={fadeInUp} className="bg-cream-light/10 rounded-2xl p-10 backdrop-blur-sm">
-              <p className="text-7xl md:text-8xl font-serif font-bold text-dusty-gold mb-4">25%</p>
+              <p className="text-7xl md:text-8xl font-serif font-bold text-dusty-gold mb-2">25%</p>
               <p className="text-xl mb-6">Management Commission</p>
-              <p className="text-cream/80 leading-relaxed max-w-2xl mx-auto">
-                Our 25% commission covers everything: marketing, guest services, cleaning coordination, maintenance oversight, and financial reporting. No hidden fees, no surprise charges.
+              <p className="text-2xl font-serif text-cream-light mb-6">
+                You keep <span className="text-dusty-gold font-bold">75%</span> — we earn our share by maximizing yours.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto text-left mb-8">
+                {[
+                  'Multi-platform marketing & listing management',
+                  'Guest communication & 24/7 support',
+                  'Professional cleaning coordination',
+                  'Maintenance, inspections & financial reporting',
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-dusty-gold flex-shrink-0 mt-0.5" />
+                    <span className="text-cream/90 text-sm">{item}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-cream/70 text-sm font-medium uppercase tracking-wider">
+                No startup fees • No contracts • Cancel anytime
               </p>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
-      {/* Services */}
+      {/* Owner Testimonials */}
+      <section className="py-24 bg-cream-light">
+        <div className="container mx-auto px-4 lg:px-8">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="text-center mb-16"
+          >
+            <motion.p variants={fadeInUp} className="text-accent uppercase tracking-[0.2em] text-sm font-medium mb-4">
+              Owner Experiences
+            </motion.p>
+            <motion.h2 variants={fadeInUp} className="font-serif text-4xl md:text-5xl font-semibold">
+              What Our Owners Say
+            </motion.h2>
+          </motion.div>
+
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={staggerContainer}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          >
+            {testimonials.map((testimonial, index) => (
+              <motion.div
+                key={index}
+                variants={fadeInUp}
+                className="bg-card p-8 rounded-lg shadow-md"
+              >
+                <div className="flex items-center gap-1 text-dusty-gold mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-current" />
+                  ))}
+                </div>
+                <p className="text-foreground mb-6 leading-relaxed italic">"{testimonial.quote}"</p>
+                <div>
+                  <p className="font-semibold text-foreground">{testimonial.author}</p>
+                  <p className="text-sm text-muted-foreground">{testimonial.location}</p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Services & Form */}
       <section className="py-24 bg-background">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
