@@ -61,9 +61,15 @@ const Index = () => {
               variants={fadeInUp}
               className="font-serif text-5xl md:text-7xl lg:text-8xl text-cream-light text-shadow-lg leading-tight"
             >
-              Flagstaff's Premier
-              <span className="block italic text-dusty-gold">Rental Management</span>
+              Flagstaff Escapes
             </motion.h1>
+
+            <motion.p
+              variants={fadeInUp}
+              className="font-serif text-2xl md:text-3xl text-dusty-gold italic"
+            >
+              Premier Rental Management
+            </motion.p>
 
             <motion.p
               variants={fadeInUp}
