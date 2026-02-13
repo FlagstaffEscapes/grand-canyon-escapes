@@ -1,50 +1,27 @@
 
 
-# Update Owners Page, Homepage Typography, and Verify Header CTA
+# Update Property Images to Authentic Flagstaff Aesthetic
 
-## 1. Homepage Typography Fix
-**File:** `src/pages/Index.tsx`
+## What's Changing
+Replace all 18 property card images with Unsplash photos depicting mountain cabins, log homes, pine forest settings, and rustic-luxury properties -- the kind of homes you'd actually find in Flagstaff, AZ.
 
-Adjust the hero heading hierarchy so "Flagstaff Escapes" is the dominant brand name and "Premier Rental Management" is smaller:
-- Change the hero structure so "Flagstaff Escapes" is the large text (keep the `text-5xl md:text-7xl lg:text-8xl` sizing)
-- Move "Premier Rental Management" to a smaller subtitle line below it (e.g., `text-2xl md:text-3xl`)
+Your admin portal image management will continue to work exactly as before. These are just URL updates in the database -- you can still add, remove, reorder, or replace any image through the admin property editor at any time.
 
-## 2. Owners Page Enhancements
-**File:** `src/pages/Owners.tsx`
+## New Image Selections
 
-### a. Hero -- Align with homepage messaging
-- Update the hero subheading label to "Flagstaff Escapes" prominently
-- Refine the headline and subtitle to reinforce the owner-first pitch with messaging that mirrors the homepage
-
-### b. Expanded Commission Section
-Add more compelling detail to the 25% commission area:
-- Add a breakdown of what's included (3-4 bullet points inside the commission card)
-- Add a comparison line like "You keep 75% -- we earn our share by maximizing yours"
-- Add a "No startup fees, no contracts" reassurance line
-
-### c. Add "How It Works" Process Section
-Insert a new section between Benefits and Commission with 3 simple steps:
-1. **Schedule a Consultation** -- We evaluate your property and discuss your goals
-2. **We Handle Setup** -- Professional photography, listing creation, and pricing strategy
-3. **Start Earning** -- Sit back while we manage everything and maximize your returns
-
-### d. Add Owner Testimonials
-Add a testimonials section (reuse the same ones from the homepage) between the Commission section and the Services/Form section for reinforcement on this page.
-
-## 3. Property Images -- Flagstaff Locations
-The current hero image on the Owners page (`property-exterior-1.jpg`) is a bundled asset. Since we cannot verify if it depicts Flagstaff, we will replace the Owners page hero with the existing `hero-home.jpg` (the main site hero image showing a mountain cabin), which better represents the Flagstaff aesthetic. This is a quick improvement using existing assets.
-
-## 4. Verify Header CTA
-The Header already correctly has "List Your Property" linking to `/owners` on both desktop and mobile. No changes needed -- this is confirmed working.
-
----
+| Property | Primary Image | Secondary Images |
+|----------|--------------|-----------------|
+| **Ponderosa Retreat** | Log cabin nestled in tall pines | Rustic wood-beam interior; Deck overlooking pine forest |
+| **Alpine Lodge** | Large timber-frame mountain lodge | Vaulted wood-ceiling great room; Mountain view from wraparound deck |
+| **Canyon Vista** | A-frame cabin with scenic views | Warm wood-paneled bedroom; Sunset deck with canyon backdrop |
+| **Timber Haven** | Wood-clad home surrounded by forest | Stone fireplace living room; Meadow/trail view from porch |
+| **Stargazer Cabin** | Cozy cabin at twilight/dusk | Warm lantern-lit interior; Night sky observation deck |
+| **Mountain Majesty** | Grand mountain estate with stone and timber | Luxurious open-concept living; Panoramic mountain vista |
 
 ## Technical Details
 
-### Files to modify:
-| File | Changes |
-|------|---------|
-| `src/pages/Index.tsx` | Hero heading hierarchy -- make "Flagstaff Escapes" big, "Premier Rental Management" smaller |
-| `src/pages/Owners.tsx` | Enhanced commission section, new "How It Works" steps, owner testimonials, swap hero image to `hero-home.jpg` |
+- **Database-only change**: 18 `UPDATE` statements on the `property_images` table replacing `image_url` and `alt_text` values
+- **No code changes needed** -- the `PropertyCard` component and property detail page already render whatever URLs are in the database
+- All new URLs use Unsplash's `?w=1200` parameter for consistent high-quality sizing
+- Image IDs and property associations remain unchanged
 
-### No new dependencies needed.
