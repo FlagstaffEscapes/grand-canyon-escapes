@@ -4,6 +4,7 @@ import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Layout } from '@/components/layout/Layout';
+import { SEO } from '@/components/SEO';
 import { PropertyCard } from '@/components/ui/PropertyCard';
 import { useActiveProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,7 +41,11 @@ const Properties = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
+      <SEO
+        title="Luxury Vacation Rentals"
+        description="Browse handpicked luxury vacation rental cabins and mountain homes in Flagstaff, Arizona. Near the Grand Canyon with premium amenities."
+        canonical="/properties"
+      />
       <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img

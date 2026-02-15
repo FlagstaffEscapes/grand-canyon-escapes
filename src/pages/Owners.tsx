@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout/Layout';
+import { SEO } from '@/components/SEO';
 import { useToast } from '@/hooks/use-toast';
 import { useSubmitOwnerInquiry } from '@/hooks/useContacts';
 import { supabase } from '@/integrations/supabase/client';
@@ -161,7 +162,11 @@ const Owners = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
+      <SEO
+        title="Property Owners — Rental Management"
+        description="Turn your Flagstaff property into passive income. Full-service vacation rental management with 25% commission, no contracts, and maximum revenue."
+        canonical="/owners"
+      />
       <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img

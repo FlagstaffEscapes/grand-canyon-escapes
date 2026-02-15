@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
+import { SEO } from '@/components/SEO';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAreaGuides, useAreaGuideActivities } from '@/hooks/useAreaGuides';
 import grandCanyonImage from '@/assets/grand-canyon.jpg';
@@ -35,7 +36,11 @@ const Experiences = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
+      <SEO
+        title="Area Guide & Experiences"
+        description="Explore Northern Arizona from Flagstaff. Grand Canyon, Sedona, hiking, skiing, and year-round adventures near our luxury vacation rentals."
+        canonical="/experiences"
+      />
       <section className="relative h-[70vh] min-h-[600px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
