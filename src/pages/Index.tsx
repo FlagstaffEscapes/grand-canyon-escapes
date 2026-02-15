@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Star, Shield, MapPin, TrendingUp, HandshakeIcon, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
+import { SEO } from '@/components/SEO';
 import { PropertyCard } from '@/components/ui/PropertyCard';
 import { useFeaturedProperties } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,7 +30,15 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
+      <SEO
+        canonical="/"
+        description="Luxury vacation rentals in Flagstaff, Arizona near the Grand Canyon. Handpicked cabins and mountain homes with stunning views, premium amenities, and full-service management."
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://flagstaffescapes.lovable.app/' }],
+        }}
+      />
       <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">

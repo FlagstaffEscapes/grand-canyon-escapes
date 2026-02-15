@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Home, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
+import { SEO } from '@/components/SEO';
 
 const NotFound = () => {
   const location = useLocation();
@@ -14,6 +15,7 @@ const NotFound = () => {
 
   return (
     <Layout>
+      <SEO title="Page Not Found" noIndex />
       <div className="min-h-[80vh] flex items-center justify-center bg-background">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

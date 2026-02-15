@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Layout } from '@/components/layout/Layout';
+import { SEO } from '@/components/SEO';
 import { usePropertyBySlug } from '@/hooks/useProperties';
 import { Skeleton } from '@/components/ui/skeleton';
 import AvailabilityChecker from '@/components/AvailabilityChecker';
@@ -114,8 +115,33 @@ const PropertyDetail = () => {
     'No parties or events',
   ];
 
+  const primaryImage = sortedImages[0]?.image_url || '/placeholder.svg';
+
   return (
     <Layout>
+      <SEO
+        title={`${property.name} — ${property.city}, ${property.state}`}
+        description={property.tagline || `${property.bedrooms}-bedroom luxury vacation rental in ${property.city}, ${property.state}. Sleeps ${property.sleeps}. Starting at $${Number(property.price_per_night).toFixed(0)}/night.`}
+        canonical={`/properties/${property.slug}`}
+        ogImage={primaryImage}
+        ogType="product"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'LodgingBusiness',
+          name: property.name,
+          description: property.description,
+          image: primaryImage,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: property.city,
+            addressRegion: property.state,
+            addressCountry: 'US',
+          },
+          numberOfRooms: property.bedrooms,
+          petsAllowed: false,
+          priceRange: `$${Number(property.price_per_night).toFixed(0)}/night`,
+        }}
+      />
       {/* Back Button */}
       <div className="bg-card border-b border-border pt-24 pb-4">
         <div className="container mx-auto px-4 lg:px-8">

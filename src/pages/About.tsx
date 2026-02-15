@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Layout } from '@/components/layout/Layout';
+import { SEO } from '@/components/SEO';
 import { useToast } from '@/hooks/use-toast';
 import { useSubmitContact } from '@/hooks/useContacts';
 import { supabase } from '@/integrations/supabase/client';
@@ -81,7 +82,11 @@ const About = () => {
 
   return (
     <Layout>
-      {/* Hero Section */}
+      <SEO
+        title="About Us & Contact"
+        description="Meet the Flagstaff Escapes team. Local Flagstaff hosts offering luxury vacation rental management near the Grand Canyon. Contact us today."
+        canonical="/about"
+      />
       <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img
